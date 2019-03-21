@@ -3,3 +3,9 @@ Flask==0.12.2
 requests
 requests-cache
 plotly
+passlib
+itsdangerous
+flask_httpauth
+cassandra−driver
+flask-cqlalchemy
+uuid
