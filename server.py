@@ -13,16 +13,29 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 from cassandra.cluster import Cluster
 from flask.ext.cqlalchemy import CQLAlchemy
 import uuid
+from cassandra.query import dict_factory
+from cassandra.query import Statement
+from cassandra.query import BatchStatement
+
 
 auth = HTTPBasicAuth()
 
+# cluster = Cluster(['cassandra'])
+cluster = Cluster(['127.0.0.1'])
+
+
+session = cluster.connect()
+
+session.row_factory = dict_factory
+
+
 app = Flask(__name__, template_folder="templates")
+# app.config['CASSANDRA_HOSTS'] = ['127.0.0.1']
 
 
 # app.config['CASSANDRA_HOSTS'] = ['127.0.0.1']
 # app.config['CASSANDRA_KEYSPACE'] = "cqlengine"
 # db = CQLAlchemy(app)
-
 
 secret_key = os.urandom(12)
 
@@ -40,7 +53,6 @@ categories_url_template = 'https://data.police.uk/api/crime-categories?date={dat
 place_url_template = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query={place}&key={key}'
 
 
-user_hash = "$6$rounds=656000$kyl9UY6kcV3sAT4u$G9Tu3XycW2HpSDe4tFJK/i28t5haDGb0FsBxCgg5VjArO2SgP6GVEOi450N1FKYyXnrEbUNqK.EFiCPbsabSi0"
 
 # class User(db.Model):
 class User:
@@ -54,7 +66,7 @@ class User:
     #
     # email = db.columns.Text(required=False)
 
-    id = ""
+    id =""
     username = ""
 
     password_hash = ""
@@ -63,10 +75,16 @@ class User:
 
     email = ""
 
+    # 1 for admin, 2 for normal user
+    role = 2
+
     def __init__(self, username, name, email):
         self.username = username
         self.name = name
         self.email = email
+
+    def update_id(self, id):
+        self.id = id
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
@@ -77,6 +95,12 @@ class User:
     def update_email(self, email):
         self.email = email
 
+    def update_role(self,role):
+        self.role = role
+
+    def update_password_hash(self, password_hash):
+        self.password_hash = password_hash
+
     def update_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
 
@@ -85,7 +109,7 @@ class User:
 
     def generate_auth_token(self, expiration=6000):
         s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
-        return s.dumps({'id': 1})
+        return s.dumps({'id': self.id})
 
     @staticmethod
     def verify_auth_token(token):
@@ -96,13 +120,21 @@ class User:
             return None # valid token, but expired
         except BadSignature:
             return None # invalid token
-        user = User("sakis", "", "")
-        user.hash_password("1234")
-        return user
+        print("that fucking thing" + data['id'])
+        prepared_statement = session.prepare('SELECT ID ,Username,Role FROM CCMiniProject.users WHERE ID= ?')
+        rows = session.execute(prepared_statement, (uuid.UUID(data['id']),))
+        if not rows:
+            return None
+        else:
+            user = User(rows[0][u'username'], "", "")
+            user.update_role(rows[0][u'role'])
+            return user
 
 
-@app.route('/api/createuser', methods=['POST'])
-def new_user():
+@app.route('/api/users/createuser', methods=['POST'])
+def create_user():
+    if request is None:
+        return jsonify({'error': 'missing arguments!'}), 400
     username = request.json.get('username')
     password = request.json.get('password')
     email = request.json.get('email')
@@ -110,17 +142,93 @@ def new_user():
     if username is None or password is None:
         # missing arguments
         return jsonify({'error': 'missing arguments!'}), 400
-    # if User.query.filter_by(username = username).first() is not None:
-    #     # existing user
-    #     return jsonify({'error': 'existing user!'}), 400
+    prepared_statement = session.prepare("SELECT * FROM CCMiniProject.users WHERE Username = ?;")
+    rows = session.execute(prepared_statement,(username,))
+    if rows:
+        if rows[0][u'username'] == username:
+            # existing user
+            return jsonify({'error': 'existing user!'}), 400
     user = User(username=username, name=name, email=email)
     user.hash_password(password)
-    # db.session.add(user)
-    # db.session.commit()
+    rows = session.execute("INSERT INTO CCMiniProject.users (ID,Username,Password_hash, Name, Email, Role) VALUES (%s,%s,%s,%s,%s,%s);", (uuid.uuid4(),user.username, user.password_hash, user.name, user.email, 2))
     return jsonify({'username': user.username, 'name': user.name, 'email': user.email}), 201
 
 
-@app.route('/api/token')
+@app.route('/api/users/updateuser/<username>', methods=['PUT'])
+@auth.login_required
+def update_user(username):
+    if request is None:
+        return jsonify({'error': 'missing arguments!'}), 400
+    password = request.json.get('password')
+    email = request.json.get('email')
+    name = request.json.get('name')
+    if password is None or email is None or name is None:
+        # missing arguments
+        return jsonify({'error': 'missing arguments!'}), 400
+    prepared_statement = session.prepare('SELECT ID, Username FROM CCMiniProject.users WHERE Username = ?')
+    rows = session.execute(prepared_statement, (username,))
+    # if not admin then not allowed to update or create other users
+    if g.user.role == 2:
+        if (rows is None) or (not rows):
+            return jsonify({'error': 'only authorized to update your user'}), 401
+        else:
+            if rows[0][u'username'] != g.user.username:
+                # existing user
+                return jsonify({'error': 'only authorized to update your user'}), 401
+            user = User(username=username, name=name, email=email)
+            user.hash_password(password)
+            user.update_id(rows[0][u'id'])
+            prepared_statement = session.prepare("UPDATE CCMiniProject.users SET Password_hash = ?, Name = ?, Email = ? WHERE ID = ?")
+            rows = session.execute(prepared_statement, (user.password_hash, user.name, user.email, user.id))
+            return jsonify({'username': user.username, 'name': user.name, 'email': user.email}), 200
+    # if admin then allowed to update and create users
+    else:
+        # if user doesn't exist create new one
+        if (rows is None) or (not rows):
+            user = User(username=username, name=name, email=email)
+            user.hash_password(password)
+            rows = session.execute("INSERT INTO CCMiniProject.users (ID,Username,Password_hash, Name, Email, Role) VALUES (%s,%s,%s,%s,%s,%s)", (uuid.uuid4(),user.username, user.password_hash, user.name, user.email,2))
+            return jsonify({'username': user.username, 'name': user.name, 'email': user.email}), 201
+        # if user exists then update
+        else:
+            user = User(username=username, name=name, email=email)
+            user.hash_password(password)
+            user_id = rows[0][u'id']
+            prepared_statement = session.prepare("UPDATE CCMiniProject.users SET Password_hash = ?, Name = ?, Email = ? WHERE ID = ?")
+            rows = session.execute(prepared_statement, (user.password_hash, user.name, user.email, user_id))
+            return jsonify({'username': user.username, 'name': user.name, 'email': user.email}), 200
+
+@app.route('/api/users/deleteuser/<username>', methods=['DELETE'])
+@auth.login_required
+def delete_user(username):
+    prepared_statement = session.prepare('SELECT ID,Username FROM CCMiniProject.users WHERE Username = ?')
+    rows = session.execute(prepared_statement, (username,))
+    # if not admin not allowed to delete other users
+    if g.user.role == 2:
+        # if user to be deleted doesn't exist, show unauthorized instead of user doesn't exist. Non admins shouldn't
+        # know which users exist and which do not.
+        if (rows is None) or (not rows):
+            return jsonify({'error': 'unauthorized delete request!'}), 401
+        else:
+            if rows[0][u'username'] != g.user.username:
+                # existing user
+                return jsonify({'error': 'unauthorized delete request!'}), 401
+            id_to_delete = rows[0][u'id']
+            prepared_statement = session.prepare("DELETE FROM CCMiniProject.users WHERE ID = ?")
+            rows = session.execute(prepared_statement, (id_to_delete,))
+            return jsonify({'data': 'user deleted'}), 200
+    # if admin allowed to delete any user
+    else:
+        # if user does't exist
+        if (rows is None) or (not rows):
+            return jsonify({'error': 'user not found'}), 404
+        user_id = rows[0][u'id']
+        prepared_statement = session.prepare("DELETE FROM CCMiniProject.users WHERE ID = ?")
+        rows = session.execute(prepared_statement, (user_id,))
+        return jsonify({'data': 'user deleted'}), 200
+
+
+@app.route('/api/token', methods=["GET"])
 @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
@@ -130,6 +238,8 @@ def get_auth_token():
 @app.route('/api/get_crimes',  methods=['GET'])
 @auth.login_required
 def get_crimes():
+    if request is None:
+        return jsonify({'error': 'missing arguments!'}), 400
     my_latitude = request.args.get('lat')
     my_longitude = request.args.get('lng')
     my_date = request.args.get('date')
@@ -149,6 +259,8 @@ def get_crimes():
 @app.route('/api/get_crimes_at_place',  methods=['GET'])
 @auth.login_required
 def get_crimes_at_place():
+    if request is None:
+        return jsonify({'error': 'missing arguments!'}), 400
     place = request.args.get('place')
     if place is None:
         return jsonify({'error': 'missing arguments'}), 400
@@ -185,6 +297,8 @@ def get_crimes_at_place():
 @app.route('/api/get_crime_outcome',  methods=['GET'])
 @auth.login_required
 def get_crime_outcome():
+    if request is None:
+        return jsonify({'error': 'missing arguments!'}), 400
     id = request.args.get('id')
     if id is None:
         return jsonify({'error': 'missing arguments'}), 400
@@ -200,6 +314,8 @@ def get_crime_outcome():
 @app.route('/api/get_crime_categories',  methods=['GET'])
 @auth.login_required
 def get_crime_categories():
+    if request is None:
+        return jsonify({'error': 'missing arguments!'}), 400
     date = request.args.get('date')
     if date is None:
         return jsonify({'error': 'missing arguments'}), 400
@@ -223,9 +339,16 @@ def home():
 def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token)
     if not user:
-        user = User("username1", "", "")
-        user.hash_password("1234")
-        if not user or not user.verify_password(password):
+        prepared_statement = session.prepare("SELECT ID,Username,Password_hash,Role FROM CCMiniProject.users WHERE Username = ?;")
+        rows = session.execute(prepared_statement, (username_or_token,))
+        if not rows:
+            return False
+        else:
+            user = User(rows[0][u'username'],"","")
+            user.update_password_hash(rows[0][u'password_hash'])
+            user.update_role(rows[0][u'role'])
+            user.update_id(str(rows[0][u'id']))
+        if not user.verify_password(password):
             return False
     g.user = user
     return True
