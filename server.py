@@ -126,7 +126,7 @@ class User:
 
 @app.route('/api/users/createuser', methods=['POST'])
 def create_user():
-    if request is None:
+    if request.json is None:
         return jsonify({'error': 'missing arguments!'}), 400
     username = request.json.get('username')
     password = request.json.get('password')
