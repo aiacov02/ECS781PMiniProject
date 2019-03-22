@@ -36,7 +36,7 @@ secret_key = os.urandom(12)
 
 app.config['SECRET_KEY'] = secret_key
 
-API_KEY = 'AIzaSyDmLyS-tAL6evGdKrTjKA-DcgSD6lMuiAI'
+API_KEY = '#######################################'
 
 
 crime_url_template = 'https://data.police.uk/api/crimes-street/all-crime?lat={lat}&lng={lng}&date={data}'
