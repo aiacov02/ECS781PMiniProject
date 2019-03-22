@@ -7,5 +7,5 @@ passlib
 itsdangerous
 flask_httpauth
 cassandra−driver
-flask-cqlalchemy
 uuid
+os

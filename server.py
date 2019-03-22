@@ -1,21 +1,14 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, g
-import plotly.graph_objs as go
-from plotly.utils import PlotlyJSONEncoder
-import json
 import requests
-from pprint import pprint
 import os
-from OpenSSL import SSL
 from passlib.apps import custom_app_context as pwd_context
 from flask_httpauth import HTTPBasicAuth
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 from cassandra.cluster import Cluster
-from flask.ext.cqlalchemy import CQLAlchemy
 import uuid
 from cassandra.query import dict_factory
-from cassandra.query import Statement
-from cassandra.query import BatchStatement
+
 
 
 auth = HTTPBasicAuth()
