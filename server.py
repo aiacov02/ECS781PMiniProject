@@ -30,12 +30,16 @@ app = Flask(__name__, template_folder="templates")
 # app.config['CASSANDRA_KEYSPACE'] = "cqlengine"
 # db = CQLAlchemy(app)
 
+
+# random key generated to be session key
 secret_key = os.urandom(12)
 
 
 
 app.config['SECRET_KEY'] = secret_key
 
+
+# API key to be used for the Google Places API
 API_KEY = '#######################################'
 
 
@@ -46,20 +50,10 @@ categories_url_template = 'https://data.police.uk/api/crime-categories?date={dat
 place_url_template = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query={place}&key={key}'
 
 
-
-# class User(db.Model):
+# Class name User. It is used to represent a user in the Database
 class User:
 
-    # id = db.columns.UUID(primary_key=True, default=uuid.uuid4)
-    # username = db.columns.Text(required=True)
-    #
-    # password_hash = db.columns.Text(required=True)
-    #
-    # name = db.columns.Text(required=False)
-    #
-    # email = db.columns.Text(required=False)
-
-    id =""
+    id = ""
     username = ""
 
     password_hash = ""
@@ -100,10 +94,12 @@ class User:
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
+    # generates authentication token for a user
     def generate_auth_token(self, expiration=6000):
         s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
         return s.dumps({'id': self.id})
 
+    # verifies the authentication token of a user
     @staticmethod
     def verify_auth_token(token):
         s = Serializer(app.config['SECRET_KEY'])
@@ -124,6 +120,14 @@ class User:
             return user
 
 
+# Function to create a new user in the database. Doesn't require authentication
+# @path: /api/users/createuser
+# @method: POST
+# @param: username
+# @param: password
+# @param: email
+# @param: name
+# @returns: Code 201 and user details if success, 400 and error message if failure
 @app.route('/api/users/createuser', methods=['POST'])
 def create_user():
     if request.json is None:
@@ -147,10 +151,18 @@ def create_user():
     return jsonify({'username': user.username, 'name': user.name, 'email': user.email}), 201
 
 
+# Function to update the details of a user or create a new one, if they don't exist. Requires authentication using
+# username and password or authentication key
+# @path: /api/users/updateuser/<username>
+# @method: PUT
+# @param: password
+# @param: email
+# @param: name
+# @returns: 400 or 401 and error message if failure, 200 or 201 if success
 @app.route('/api/users/updateuser/<username>', methods=['PUT'])
 @auth.login_required
 def update_user(username):
-    if request is None:
+    if request.json is None:
         return jsonify({'error': 'missing arguments!'}), 400
     password = request.json.get('password')
     email = request.json.get('email')
@@ -191,6 +203,10 @@ def update_user(username):
             rows = session.execute(prepared_statement, (user.password_hash, user.name, user.email, user_id))
             return jsonify({'username': user.username, 'name': user.name, 'email': user.email}), 200
 
+# Function to delete a user. Requires authentication using username and password or authentication key
+# @path: /api/users/deleteuser/<username>
+# @method: DELETE
+# @returns 401 or 404 and error message if failure, 200 if success
 @app.route('/api/users/deleteuser/<username>', methods=['DELETE'])
 @auth.login_required
 def delete_user(username):
@@ -221,17 +237,28 @@ def delete_user(username):
         return jsonify({'data': 'user deleted'}), 200
 
 
+# Function to request authentication token. Requires authentication using username and password
+# @path: /api/token
+# @method: GET
+# @returns: token
 @app.route('/api/token', methods=["GET"])
 @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
     return jsonify({'token': token.decode('ascii')})
 
-
+# Function to request crimes from the metropolitan police, near a specific latitude and longitude, at a specific date.
+# Requires authentication using username and password or authentication key
+# @path: /api/get_crimes/
+# @method: GET
+# @param: lat - The latitude
+# @param: lng - The longitude
+# @param: date
+# @returns: 400 and error message if failure, 200 and crime data if success
 @app.route('/api/get_crimes',  methods=['GET'])
 @auth.login_required
 def get_crimes():
-    if request is None:
+    if request.args is None:
         return jsonify({'error': 'missing arguments!'}), 400
     my_latitude = request.args.get('lat')
     my_longitude = request.args.get('lng')
@@ -248,11 +275,18 @@ def get_crimes():
         return jsonify({'error': resp.reason}), resp.status_code
     return jsonify({'data': crimes}), 200
 
-
+# Function to get crimes at a specific location by the location's name.
+# Requires authentication using username and password or authentication key
+# Calls the Google Places API to get the latitude and longitude of a place by name and then calls the MET police API
+# to get the crimes at that latitude and longitude
+# @path: api/get_crimes_at_place/
+# @method: GET
+# @param: place
+# @return: 400 and error message if failure, 200 and crime data if success
 @app.route('/api/get_crimes_at_place',  methods=['GET'])
 @auth.login_required
 def get_crimes_at_place():
-    if request is None:
+    if request.args is None:
         return jsonify({'error': 'missing arguments!'}), 400
     place = request.args.get('place')
     if place is None:
@@ -287,10 +321,16 @@ def get_crimes_at_place():
         return jsonify({'error': resp.reason}), resp.status_code
 
 
+# Function to request crime outcomes from the metropolitan police, for a specific crime
+# Requires authentication using username and password or authentication key
+# @path: /api/get_crimes_outcome/
+# @method: GET
+# @param: id - The crime id
+# @returns: 400 and error message if failure, 200 and crime outcome if success
 @app.route('/api/get_crime_outcome',  methods=['GET'])
 @auth.login_required
 def get_crime_outcome():
-    if request is None:
+    if request.args is None:
         return jsonify({'error': 'missing arguments!'}), 400
     id = request.args.get('id')
     if id is None:
@@ -303,11 +343,16 @@ def get_crime_outcome():
         return jsonify({'error': resp.reason}), resp.status_code
     return jsonify({'data': outcome}), 200
 
-
+# Function to request crime categories available at a specific date from the metropolitan police
+# Requires authentication using username and password or authentication key
+# @path: /api/get_crimes_categories/
+# @method: GET
+# @param: date
+# @returns: 400 and error message if failure, 200 and crime categories if success
 @app.route('/api/get_crime_categories',  methods=['GET'])
 @auth.login_required
 def get_crime_categories():
-    if request is None:
+    if request.args is None:
         return jsonify({'error': 'missing arguments!'}), 400
     date = request.args.get('date')
     if date is None:
@@ -321,16 +366,20 @@ def get_crime_categories():
     return jsonify({'data': categories}), 200
 
 
-
-# Create a URL route in our application for "/"
+# Function that listens in the / path to return a informative message to the user
+# @path: /
+# @method: any
+# returns: informative message
 @app.route('/')
 def home():
-    return jsonify({'data': 'Welcome to the Cloud Computing Mini Project REST API. To start using the API please create a user'})
+    return jsonify({'data': 'Welcome to the Cloud Computing Mini Project REST API. To start using the API please create a user'}), 200
 
-
+# Function to verify the user, using the authentication token, or the username and password
 @auth.verify_password
 def verify_password(username_or_token, password):
+    # verify based on authentication token
     user = User.verify_auth_token(username_or_token)
+    # if not verified, try to verify using username and password
     if not user:
         prepared_statement = session.prepare("SELECT ID,Username,Password_hash,Role FROM CCMiniProject.users WHERE Username = ?;")
         rows = session.execute(prepared_statement, (username_or_token,))
@@ -347,9 +396,10 @@ def verify_password(username_or_token, password):
     return True
 
 
-# If we're running in stand alone mode, run the application
+# Main function to run the application
 if __name__ == '__main__':
 
     app.secret_key = secret_key
+    # Loads the SSL certificate
     context = ('cert.pem', 'key.pem')
     app.run(debug=False/True, ssl_context=context)
