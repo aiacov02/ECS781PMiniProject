@@ -49,6 +49,8 @@ Content-Type: application/json <br/>
 Content-Length: 85 <br/>
 Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
 Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
+
+
 {
   "email": "your_email", 
   "name": "your_name", 
@@ -69,6 +71,8 @@ Content-Type: application/json <br/>
 Content-Length: 232 <br/>
 Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
 Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
+
+
 {
   "token": "AUTHENTICATION_TOKEN"
 }</code>
@@ -86,6 +90,8 @@ Content-Type: application/json <br/>
 Content-Length: 85 <br/>
 Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
 Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
+
+
 '{
   "email": "your_email", 
   "name": "your_name", 
@@ -106,6 +112,8 @@ Content-Type: application/json <br/>
 Content-Length: 85 <br/>
 Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
 Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
+
+
 '{
   "data": "user deleted"
 }'</code>
@@ -123,6 +131,8 @@ Content-Type: application/json <br/>
 Content-Length: 85 <br/>
 Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
 Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
+
+
 '{
   "data": CRIME DATA
 }'</code>
@@ -140,6 +150,8 @@ Content-Type: application/json <br/>
 Content-Length: 85 <br/>
 Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
 Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
+
+
 '{
   "data": CRIME DATA
 }'</code>
@@ -158,6 +170,8 @@ Content-Type: application/json <br/>
 Content-Length: 85 <br/>
 Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
 Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
+
+
 '{
   "data": CRIME DATA
 }'</code>
@@ -175,6 +189,8 @@ Content-Type: application/json <br/>
 Content-Length: 85 <br/>
 Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
 Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
+
+
 '{
   "data": CRIME CATEGORIES
 }'</code>
