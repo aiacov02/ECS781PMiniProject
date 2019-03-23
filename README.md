@@ -26,7 +26,7 @@ Please see License.txt file
 
 Please note: this REST API uses a self signed certificate for SSL encryption. The curl command doesn't like self signed
 certificates and will not allow any requests to be made. Therefore, in order be able to make a request run all the
-below command using <strong> sudo </strong> and the command parameter <strong> --cacert cacert.pem </strong> where
+below commands using <strong> sudo </strong> and the command parameter <strong> --cacert cacert.pem </strong> where
 cacert.pem is the certificate file inside the root directory of the project.
 
 <strong>Request</strong>
