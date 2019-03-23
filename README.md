@@ -7,21 +7,33 @@ from the Queen Mary, University of London. <br/>
 <br />
 The API utilizes the MET police API and the Google Place API to fetch crime data.
 <br/>
-To use the API, authentication is required.
+To use the API, username and password or token based authentication is required.
 
 <h4> LICENCE </h4>
 
 Please see License.txt file
 <br/>
 
+<h4> Running instructions <h4>
+
+1. Download or clone the directory
+2. Setup and run Cassandra database on localhost.
+3. Replace the API_KEY in the server.py file with a working Google Places API key.
+4. From the root directory run python server.py in the terminal 
+
 <h4> REST API Requests </h4>
 <br/>
+
+Please note: this REST API uses a self signed certificate for SSL encryption. The curl command doesn't like self signed
+certificates and will not allow any requests to be made. Therefore, in order be able to make a request run all the
+below command using <strong> sudo </strong> and the command parameter <strong> --cacert cacert.pem </strong> where
+cacert.pem is the certificate file inside the root directory of the project.
 
 <strong>Request</strong>
 
 * Intro message<br/>
 GET / <br/>
-<code>  curl -i http://localhost:5000/ </code>
+<code>  curl -i https://localhost:5000/ </code>
    
 <strong>Response</strong>
 
