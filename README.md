@@ -1,4 +1,4 @@
-# ECS781PMiniProject
+# ECS781PMiniProject #
 
 <h3> Rest API for the ECS781P-Cloud Computing mini-project <h4>
 
@@ -19,9 +19,9 @@ Please see License.txt file
 
 <strong>Request</strong>
 
-   * Create user<br/>
-   GET / <br/>
-   <code>  curl -i http://localhost:5000/ </code>
+* Intro message<br/>
+GET / <br/>
+<code>  curl -i http://localhost:5000/ </code>
    
 <strong>Response</strong>
 
@@ -38,9 +38,9 @@ Date: Sat, 23 Mar 2019 21:06:23 GMT <br/>
 
 <strong>Request</strong>
 
-   * Create user:<br/>
-   GET / <br/>
-   <code>  curl -H "Content-Type: application/json" -d '{"username":"your_username","password":"your_password","name":"your_name","email":"your_email"}' -X POST 'https://localhost:5000/api/users/createuser'
+* Create user:<br/>
+POST / <br/>
+<code>  curl -H "Content-Type: application/json" -d '{"username":"your_username","password":"your_password","name":"your_name","email":"your_email"}' -X POST 'https://localhost:5000/api/users/createuser'
  </code>
    
 <strong>Response</strong>
@@ -56,14 +56,39 @@ Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
   "name": "your_name", 
   "username": "your_username"
 }
-
 </code>
+
 
 <strong>Request</strong>
 
-   * Update user:<br/>
-   GET / <br/>
-   <code>  curl -H "Content-Type: application/json" -d '{"password":"your_password","name":"your_name","email":"your_email"}' -X PUT 'https://localhost:5000/api/users/updateuser/<user>'
+* Update user:<br/>
+PUT / <br/>
+<code>  curl -H "Content-Type: application/json" -d '{"password":"your_password","name":"your_name","email":"your_email"}' -X PUT 'https://localhost:5000/api/users/updateuser/<user>'
+</code>
+   
+<strong>Response</strong>
+
+<code> HTTP/1.0 200 SUCCESS <br/>
+Content-Type: application/json <br/>
+Content-Length: 85 <br/>
+Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
+Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
+
+
+'{
+  "email": "your_email", 
+  "name": "your_name", 
+  "username": "your_username"
+}'
+
+</code>
+
+
+<strong>Request</strong>
+
+   * Delete user:<br/>
+   DELETE / <br/>
+   <code>  curl -i -X DELETE 'https://localhost:5000/api/users/deleteuser/<user>'
  </code>
    
 <strong>Response</strong>
@@ -74,13 +99,9 @@ Content-Length: 85 <br/>
 Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
 Date: Sat, 23 Mar 2019 21:25:50 GMT <br/>
 
-{
-  "email": "your_email", 
-  "name": "your_name", 
-  "username": "your_username"
-}
+
+'{
+  "data": "user deleted"
+}'
 
 </code>
-
-
-
