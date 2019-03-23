@@ -395,6 +395,19 @@ def verify_password(username_or_token, password):
     g.user = user
     return True
 
+# Function to run before the server accepts the first request to initialize the database if needed
+@app.before_first_request
+def init_database():
+    # create keyspace CCMiniProject
+    session.execute("CREATE KEYSPACE IF NOT EXISTS CCMiniProject WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };")
+    # create table users
+    session.execute("CREATE TABLE IF NOT EXISTS CCMiniProject.users ( ID UUID PRIMARY KEY, Username text, Password_hash text, Name text, Email text, Role int);")
+    # index Username column
+    session.execute("CREATE INDEX IF NOT EXISTS UsernameIndex ON CCMiniProject.users (Username);")
+    # insert admin user if not exists
+    rows = session.execute("SELECT Username FROM CCMiniProject.users WHERE Username= 'aiacov02';")
+    if not rows:
+        session.execute("INSERT INTO CCMiniProject.users (ID,Username,Password_hash, Name, Email, Role) VALUES (uuid(),'aiacov02','$6$rounds=656000$3NJhU//WbcIXIGOH$Fqrt00WRWCivYbWXnNKDgVDSlQYontrkzVteYFmeDFjOsjAyK0xqW1JwBUfsvPtjJRtveUZ.xm7QlZptaNKvh0','andreas iacovou','aiacovou5@gmail.com',1);")
 
 # Main function to run the application
 if __name__ == '__main__':
@@ -403,3 +416,4 @@ if __name__ == '__main__':
     # Loads the SSL certificate
     context = ('cert.pem', 'key.pem')
     app.run(debug=False/True, ssl_context=context)
+
