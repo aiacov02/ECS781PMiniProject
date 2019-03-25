@@ -13,9 +13,8 @@ from cassandra.query import dict_factory
 
 auth = HTTPBasicAuth()
 
-# cluster = Cluster(['cassandra'])
-cluster = Cluster(['127.0.0.1'])
-
+cluster = Cluster(['cassandra'])
+# cluster = Cluster(['127.0.0.1'])
 
 session = cluster.connect()
 
@@ -40,7 +39,7 @@ app.config['SECRET_KEY'] = secret_key
 
 
 # API key to be used for the Google Places API
-API_KEY = '#######################################'
+API_KEY = '###############A'
 
 
 crime_url_template = 'https://data.police.uk/api/crimes-street/all-crime?lat={lat}&lng={lng}&date={data}'
@@ -415,5 +414,5 @@ if __name__ == '__main__':
     app.secret_key = secret_key
     # Loads the SSL certificate
     context = ('cert.pem', 'key.pem')
-    app.run(debug=False/True, ssl_context=context)
+    app.run(host='0.0.0.0', port=8080, ssl_context=context)
 
