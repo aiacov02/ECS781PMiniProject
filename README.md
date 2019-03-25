@@ -22,13 +22,17 @@ Please see License.txt file
 4. From the root directory run python server.py in the terminal 
 
 <h4> Google Cloud Engine Installation Instructions </h4>
-1. Download or clone reporistory
-2. Replace the API_KEY in the server.py file with a working Google Places API key.
-3. Run Docker Create
-4. Run kubectl create -f cassandra-peer-service-yml
-5. Run kubectl create -f cassandra-service.yml
-6. Run kubectl create -f cassandra-replication-controller.yml
-7. Run kubectl create -f ccminiprojecttired.yaml
+1. Download or clone reporistory<br/>
+2. Replace the API_KEY in the server.py file with a working Google Places API key.<br/
+3. Run Docker Build<br/>
+4. Run Docker Push<br/>
+5. Run kubectl create -f cassandra-peer-service-yml <br/>
+6. Run kubectl create -f cassandra-service.yml<br/>
+7. Run kubectl create -f cassandra-replication-controller.yml<br/>
+8. Run kubectl apply -f ccminiprojectDeployment.yaml<br/>
+9. Run kubectl apply -f ccminiprojectservice.yaml<br/>
+
+
 
 <h4> REST API Requests </h4>
 <br/>
