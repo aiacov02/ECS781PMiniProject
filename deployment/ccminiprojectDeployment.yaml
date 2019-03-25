@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ccminiprojecttired
+spec:
+  selector:
+    matchLabels:
+      app: metrics
+      department: engineering
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: metrics
+        department: engineering
+    spec:
+      containers:
+      - name: ccminiprojectcontainer
+        image: "gcr.io/[ProjectID/ccminiproject:v1"
+        env:
+        - name: "PORT"
+          value: "8080"
