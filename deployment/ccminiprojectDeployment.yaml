@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: ccminiprojectcontainer
-        image: "gcr.io/[ProjectID/ccminiproject:v1"
+        image: "gcr.io/[ProjectID]/ccminiproject:v1"
         env:
         - name: "PORT"
           value: "8080"
