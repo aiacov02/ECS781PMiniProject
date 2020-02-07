@@ -51,7 +51,7 @@ GET / <br/>
 <strong>Response</strong>
 
 ```json
-<code> HTTP/1.0 200 OK
+HTTP/1.0 200 OK
 Content-Type: application/json
 Content-Length: 114
 Server: Werkzeug/0.14.1 Python/2.7.16
@@ -60,15 +60,16 @@ Date: Sat, 23 Mar 2019 21:06:23 GMT
  {
   "data": "Welcome to the Cloud Computing Mini Project REST API. To start using the API please create a user"
 }
-</code>
 ```
 
 <strong>Request</strong>
 
 * Create user:<br/>
 POST /api/users/createuser <br/>
-<code>curl -H "Content-Type: application/json" -d '{"username":"your_username","password":"your_password","name":"your_name","email":"your_email"}' -X POST 'https://localhost:5000/api/users/createuser'</code>
-   
+
+``` bash
+curl -H "Content-Type: application/json" -d '{"username":"your_username","password":"your_password","name":"your_name","email":"your_email"}' -X POST 'https://localhost:5000/api/users/createuser'
+```   
 <strong>Response</strong>
 
 <code>HTTP/1.0 201 CREATED <br/>
