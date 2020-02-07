@@ -50,16 +50,18 @@ GET / <br/>
    
 <strong>Response</strong>
 
-<code> HTTP/1.0 200 OK <br/>
-Content-Type: application/json<br/>
-Content-Length: 114 <br/>
-Server: Werkzeug/0.14.1 Python/2.7.16 <br/>
-Date: Sat, 23 Mar 2019 21:06:23 GMT <br/>
+```json
+<code> HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 114
+Server: Werkzeug/0.14.1 Python/2.7.16
+Date: Sat, 23 Mar 2019 21:06:23 GMT
 
  {
   "data": "Welcome to the Cloud Computing Mini Project REST API. To start using the API please create a user"
 }
 </code>
+```
 
 <strong>Request</strong>
 
