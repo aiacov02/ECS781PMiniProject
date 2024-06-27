@@ -1,9 +1,9 @@
-# ECS781PMiniProject #
+# FetchCrimeData Python Rest Api #
 
 <h3> Rest API for the ECS781P-Cloud Computing mini-project <h4>
 
-This Rest API was created under the framework of the ECS781P Cloud Computing module,
-from the Queen Mary, University of London. <br/>
+This Rest API was created for my MSc Cloud Computing module,
+at the Queen Mary, University of London. <br/>
 <br />
 The API utilizes the MET police API and the Google Place API to fetch crime data.
 <br/>
